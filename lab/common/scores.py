@@ -53,7 +53,9 @@ RANKING_FORMULAS = {
 def show(metric, formula, hand, ref=None):
     """Print one score line, so every test assertion is visible with `pytest -s`."""
     value = f"{hand:.6f}" if isinstance(hand, float) else str(hand)
-    line = f"    {metric:<24} {formula:<52} hand={value}"
+    print(f"    {metric}")
+    print(f"    {formula}")
+    line = f"    hand={value}"
     if ref is not None:
         check = f"{ref:.6f}" if isinstance(ref, float) else str(ref)
         line += f" | sklearn={check}"

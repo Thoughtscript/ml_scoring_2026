@@ -15,6 +15,12 @@ from common import scores
 from common.utils import DATA_DIR, MODEL_DIR, split_xy
 
 
+def pytest_runtest_logreport(report):
+    """Add a blank line after each test passes for better readability."""
+    if report.when == "call" and report.outcome == "passed":
+        print()
+
+
 def _require(path):
     if not path.exists():
         pytest.skip(f"{path.name} not found - run stages 1-3 first "

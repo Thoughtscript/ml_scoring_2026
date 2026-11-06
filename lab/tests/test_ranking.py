@@ -26,7 +26,9 @@ def inline(query, k):
 @pytest.mark.parametrize("k", KS)
 def test_precision_at_k(ranking, k):
     hand = ranking["hand"][f"precision@{k}"]
-    ref = float(np.mean([inline(q, k)[0] for q in ranking["queries"]]))
+    ref = float(
+        np.mean([inline(q, k)[0] for q in ranking["queries"]])
+    )
     show(f"precision@{k}", F["precision@k"], hand, ref)
     assert hand == pytest.approx(ref, abs=1e-6)
 
@@ -34,7 +36,9 @@ def test_precision_at_k(ranking, k):
 @pytest.mark.parametrize("k", KS)
 def test_recall_at_k(ranking, k):
     hand = ranking["hand"][f"recall@{k}"]
-    ref = float(np.mean([inline(q, k)[1] for q in ranking["queries"]]))
+    ref = float(
+        np.mean([inline(q, k)[1] for q in ranking["queries"]])
+    )
     show(f"recall@{k}", F["recall@k"], hand, ref)
     assert hand == pytest.approx(ref, abs=1e-6)
 
@@ -50,7 +54,9 @@ def test_r1_recall_at_1(ranking):
 @pytest.mark.parametrize("k", KS)
 def test_hit_at_k(ranking, k):
     hand = ranking["hand"][f"hit@{k}"]
-    ref = float(np.mean([inline(q, k)[2] for q in ranking["queries"]]))
+    ref = float(
+        np.mean([inline(q, k)[2] for q in ranking["queries"]])
+    )
     show(f"hit@{k}", F["hit@k"], hand, ref)
     assert hand == pytest.approx(ref, abs=1e-6)
 
@@ -58,8 +64,12 @@ def test_hit_at_k(ranking, k):
 @pytest.mark.parametrize("k", KS)
 def test_ndcg_at_k(ranking, k):
     hand = ranking["hand"][f"ndcg@{k}"]
-    ref = float(np.mean([ndcg_score(r[None, :], s[None, :], k=k)
-                         for r, s in ranking["queries"]]))
+    ref = float(
+        np.mean([
+            ndcg_score(r[None, :], s[None, :], k=k)
+            for r, s in ranking["queries"]
+        ])
+    )
     show(f"ndcg@{k}", F["ndcg@k"], hand, ref)
     assert hand == pytest.approx(ref, abs=1e-6)
 
@@ -69,11 +79,13 @@ def test_mrr(ranking):
     refs = []
     for rel, score in ranking["queries"]:
         hits = np.flatnonzero(rel[np.argsort(-score)] >= RELEVANT)
-        refs.append(1.0 / (hits[0] + 1) if len(hits) else 0.0)
+        refs.append(
+            1.0 / (hits[0] + 1) if len(hits) else 0.0
+        )
     ref = float(np.mean(refs))
     show("mrr", F["mrr"], hand, ref)
     assert hand == pytest.approx(ref, abs=1e-6)
-    assert hand >= ranking["hand"]["hit@1"] - 1e-9  # 1/rank >= 1{rank == 1}
+    assert hand >= ranking["hand"]["hit@1"] - 1e-9
 
 
 def test_map(ranking):
@@ -82,7 +94,10 @@ def test_map(ranking):
     for rel, score in ranking["queries"]:
         binary = (rel[np.argsort(-score)] >= RELEVANT).astype(float)
         hits = np.flatnonzero(binary)
-        refs.append(float(np.mean(np.cumsum(binary)[hits] / (hits + 1))) if len(hits) else 0.0)
+        refs.append(
+            float(np.mean(np.cumsum(binary)[hits] / (hits + 1)))
+            if len(hits) else 0.0
+        )
     ref = float(np.mean(refs))
     show("map", F["map"], hand, ref)
     assert hand == pytest.approx(ref, abs=1e-6)
