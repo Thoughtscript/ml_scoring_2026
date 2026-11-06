@@ -1,0 +1,40 @@
+# Each stage runs in its own container, sequentially (depends_on: service_completed_successfully).
+# Logs are tagged [STAGE n/4]; the last stage runs the pytest suite. Follow one with e.g.
+# `docker compose logs -f tests`.
+x-lab: &lab
+  build: ./lab
+  volumes:
+    - ./data:/lab/data
+    - ./models:/lab/models
+
+services:
+  generate_data:
+    <<: *lab
+    container_name: lab_1_generate_data
+    command: python -m common.generate_data
+
+  classification:
+    <<: *lab
+    container_name: lab_2_classification
+    command: python -m techniques.classification
+    depends_on:
+      generate_data: { condition: service_completed_successfully }
+
+  regression:
+    <<: *lab
+    container_name: lab_3_regression
+    command: python -m techniques.regression
+    depends_on:
+      classification: { condition: service_completed_successfully }
+
+  tests:
+    <<: *lab
+    container_name: lab_4_tests
+    command: python -m pytest tests -v -s
+    depends_on:
+      regression: { condition: service_completed_successfully }
+
+  shell:       # optional: docker compose run --rm shell
+    <<: *lab
+    command: bash
+    profiles: ["tools"]
