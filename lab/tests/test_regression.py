@@ -73,6 +73,15 @@ def test_rmsle(regression):
     assert hand == pytest.approx(ref, abs=1e-6)
 
 
+def test_rmsle_clips_negative_predictions():
+    y = np.array([1.0, 3.0])
+    pred = np.array([-2.0, 2.0])
+    hand = scores.regression_scores(y, pred, p=0)["rmsle"]
+    ref = root_mean_squared_log_error(y, np.clip(pred, 0, None))
+    show("rmsle (negative prediction clipped)", F["rmsle"], hand, ref)
+    assert hand == pytest.approx(ref, abs=1e-6)
+
+
 def test_explained_variance(regression):
     hand = float(regression["scores"]["explained_variance"])
     ref = explained_variance_score(regression["y"], regression["pred"])

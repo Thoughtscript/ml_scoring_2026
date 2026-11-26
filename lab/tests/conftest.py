@@ -1,5 +1,5 @@
 """Fixtures: load the data/ and models/ artifacts produced by stages 1-3 and hand-compute
-every score with common/scores.py. Tests assert them against scikit-learn."""
+scores with common/scores.py for comparison with reference calculations."""
 import sys
 from pathlib import Path
 

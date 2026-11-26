@@ -15,8 +15,8 @@ BINARY_FORMULAS = {
     "balanced_accuracy": "(TPR+TNR)/2",
     "mcc": "(TP*TN - FP*FN)/sqrt((TP+FP)(TP+FN)(TN+FP)(TN+FN))",
     "cohens_kappa": "(po - pe)/(1 - pe), pe from the marginals",
-    "roc_auc": "P(positive scored above negative), over all thresholds",
-    "pr_auc": "mean of precision at each relevant rank",
+    "roc_auc": "P(pos score > neg score) + 0.5 * P(tie)",
+    "average_precision": "sum of delta-recall * precision at each distinct score threshold",
     "log_loss": "-mean(y*log(p) + (1-y)*log(1-p))",
 }
 
@@ -34,7 +34,7 @@ REGRESSION_FORMULAS = {
     "smape": "mean(2|e|/(|y|+|y_hat|))",
     "r2": "1 - sum(e^2)/sum((y - mean(y))^2)",
     "adjusted_r2": "1 - (1 - R^2)(n-1)/(n-p-1)",
-    "rmsle": "sqrt(mean((log(1+y) - log(1+y_hat))^2))",
+    "rmsle": "sqrt(mean((log(1+y) - log(1+max(y_hat, 0)))^2)); predictions clipped at 0",
     "explained_variance": "1 - Var(e)/Var(y)",
     "max_error": "max|e|",
     "median_ae": "median|e|",
@@ -103,10 +103,22 @@ def hand_auc(y_true, proba):
 
 
 def hand_average_precision(y_true, proba):
-    """AP = mean of precision at each relevant rank (items sorted by descending score)."""
-    rel = y_true[np.argsort(-proba)]
-    hits = np.flatnonzero(rel)
-    return float(np.mean(np.cumsum(rel)[hits] / (hits + 1)))
+    """Non-interpolated PR area, grouping examples with identical scores."""
+    y_true = np.asarray(y_true)
+    proba = np.asarray(proba)
+    order = np.argsort(-proba, kind="mergesort")
+    rel = y_true[order].astype(float)
+    sorted_scores = proba[order]
+    n_positive = rel.sum()
+    if not len(rel) or not n_positive:
+        return 0.0
+
+    group_ends = np.r_[np.flatnonzero(sorted_scores[:-1] != sorted_scores[1:]), len(rel) - 1]
+    true_positives = np.cumsum(rel)[group_ends]
+    precision = true_positives / (group_ends + 1)
+    recall = true_positives / n_positive
+    recall_increments = np.diff(np.r_[0.0, recall])
+    return float(np.sum(recall_increments * precision))
 
 
 def hand_log_loss(y_true, proba, eps=1e-15):

@@ -1,7 +1,6 @@
 """Stage 3: train the linear regression into models/.
 
-All scoring lives in tests/ (stage 4): every score is hand-computed from the
-residuals e = y - y_hat in common/scores.py and asserted against scikit-learn there.
+Scoring demonstrations and comparisons live in tests/ (stage 4).
 """
 import joblib
 from sklearn.linear_model import LinearRegression

@@ -1,4 +1,5 @@
 """Binary classification scores: hand-computed from TP/FP/FN/TN, asserted against scikit-learn."""
+import numpy as np
 import pytest
 from sklearn.metrics import (accuracy_score, average_precision_score, balanced_accuracy_score,
                              cohen_kappa_score, confusion_matrix, f1_score, fbeta_score,
@@ -122,10 +123,19 @@ def test_roc_auc(binary):
     assert hand == pytest.approx(ref, abs=1e-6)
 
 
-def test_pr_auc(binary):
+def test_average_precision(binary):
     hand = scores.hand_average_precision(binary["y"], binary["proba"])
     ref = average_precision_score(binary["y"], binary["proba"])
-    show("pr_auc", F["pr_auc"], hand, ref)
+    show("average_precision", F["average_precision"], hand, ref)
+    assert hand == pytest.approx(ref, abs=1e-6)
+
+
+def test_average_precision_groups_tied_scores():
+    y = np.array([1, 1, 0])
+    proba = np.array([0.9, 0.5, 0.5])
+    hand = scores.hand_average_precision(y, proba)
+    ref = average_precision_score(y, proba)
+    show("average_precision (tied scores)", F["average_precision"], hand, ref)
     assert hand == pytest.approx(ref, abs=1e-6)
 
 
