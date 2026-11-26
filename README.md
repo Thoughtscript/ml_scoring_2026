@@ -4,7 +4,7 @@
 
 A simple lab covering important Machine Learning Model and Inference Scores.
 
-> *AI helped generate this lab in prep for the GCP PMLE exam.*
+> *AI helped generate this lab in prep for the GCP PMLE exam (that I [passed](https://www.credly.com/users/adam-gerard/badges/credly)).*
 
 ## Overview
 
